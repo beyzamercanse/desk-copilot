@@ -1,0 +1,12 @@
+{"id": "q01", "question": "What was total P&L on 2026-06-30 and how much came from price moves?", "expected_route": "metric", "expected_metric": "pnl_explain_total", "expected_params": {"as_of_date": "2026-06-30"}}
+{"id": "q02", "question": "Which counterparty drove the biggest P&L move on 2026-06-29?", "expected_route": "metric", "expected_metric": "pnl_by_counterparty", "expected_params": {"as_of_date": "2026-06-29"}}
+{"id": "q03", "question": "Break down yesterday's P&L by hub. Today is 2026-06-30.", "expected_route": "metric", "expected_metric": "pnl_by_hub", "expected_params": {"as_of_date": "2026-06-29"}}
+{"id": "q04", "question": "What is the book worth on 2026-05-29?", "expected_route": "metric", "expected_metric": "book_mtm", "expected_params": {"as_of_date": "2026-05-29"}}
+{"id": "q05", "question": "Who is closest to their credit limit on 2026-06-30?", "expected_route": "metric", "expected_metric": "top_limit_utilisation", "expected_params": {"as_of_date": "2026-06-30"}}
+{"id": "q06", "question": "List every limit breach in June 2026.", "expected_route": "metric", "expected_metric": "limit_breaches", "expected_params": {"start_date": "2026-06-01", "end_date": "2026-06-30"}}
+{"id": "q07", "question": "How many trades break between front office and risk, by break type?", "expected_route": "metric", "expected_metric": "recon_breaks", "expected_params": {}}
+{"id": "q08", "question": "Show residual load in NL on 2026-03-02.", "expected_route": "metric", "expected_metric": "residual_load", "expected_params": {"zone": "NL", "start_ts": "2026-03-02", "end_ts": "2026-03-03"}}
+{"id": "q09", "question": "What was the NL to DE-LU day-ahead spread on 2026-03-02?", "expected_route": "metric", "expected_metric": "price_spread", "expected_params": {"zone_a": "NL", "zone_b": "DE-LU", "start_ts": "2026-03-02", "end_ts": "2026-03-03"}}
+{"id": "q10", "question": "Which plants were unavailable in NL in February 2026 and how many MW did we lose?", "expected_route": "rag", "expected_metric": null, "expected_params": {}}
+{"id": "q11", "question": "What is our 99% 10-day VaR?", "expected_route": "refuse", "expected_metric": null, "expected_params": {}}
+{"id": "q12", "question": "How many distinct counterparties traded gas at TTF?", "expected_route": "sql", "expected_metric": null, "expected_params": {}}

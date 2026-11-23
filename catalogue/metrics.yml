@@ -1,0 +1,100 @@
+# Governed metrics over the RiskLedger and GridFlow marts.
+# Parameters use :name placeholders and are bound by the driver, never string-formatted.
+tables:
+  - fct_pnl_explain
+  - fct_mtm_daily
+  - fct_exposure_vs_limit
+  - fct_limit_breaches
+  - fct_fo_risk_recon
+  - gridflow.mart_residual_load
+  - gridflow.mart_price_spreads
+
+metrics:
+  - name: pnl_explain_total
+    description: Total daily P&L split into price, volume and new-trade effects for one business day.
+    params: [as_of_date]
+    sql: |
+      select as_of_date,
+             sum(price_effect_eur) as price_effect_eur,
+             sum(volume_effect_eur) as volume_effect_eur,
+             sum(new_trade_effect_eur) as new_trade_effect_eur,
+             sum(total_change_eur) as total_pnl_eur
+      from fct_pnl_explain
+      where as_of_date = :as_of_date
+      group by as_of_date
+
+  - name: pnl_by_counterparty
+    description: Daily P&L per counterparty for one business day, largest moves first.
+    params: [as_of_date]
+    sql: |
+      select counterparty_id, sum(total_change_eur) as pnl_eur
+      from fct_pnl_explain
+      where as_of_date = :as_of_date
+      group by counterparty_id
+      order by abs(sum(total_change_eur)) desc
+
+  - name: pnl_by_hub
+    description: Daily P&L per hub (power and gas) for one business day.
+    params: [as_of_date]
+    sql: |
+      select hub, commodity, sum(total_change_eur) as pnl_eur
+      from fct_pnl_explain
+      where as_of_date = :as_of_date
+      group by hub, commodity
+      order by pnl_eur desc
+
+  - name: book_mtm
+    description: Total mark-to-market of the live book on one business day.
+    params: [as_of_date]
+    sql: |
+      select as_of_date, sum(mtm_eur) as book_mtm_eur
+      from fct_mtm_daily
+      where as_of_date = :as_of_date
+      group by as_of_date
+
+  - name: top_limit_utilisation
+    description: Counterparties ranked by credit-limit utilisation on one business day.
+    params: [as_of_date]
+    sql: |
+      select counterparty_id, credit_rating, exposure_eur, credit_limit_eur, limit_utilisation
+      from fct_exposure_vs_limit
+      where as_of_date = :as_of_date
+      order by limit_utilisation desc
+
+  - name: limit_breaches
+    description: Counterparty-days over their credit limit between two dates.
+    params: [start_date, end_date]
+    sql: |
+      select as_of_date, counterparty_id, exposure_eur, credit_limit_eur, limit_utilisation
+      from fct_limit_breaches
+      where as_of_date between :start_date and :end_date
+      order by as_of_date, limit_utilisation desc
+
+  - name: recon_breaks
+    description: Front-office vs risk reconciliation breaks by type on the current book.
+    params: []
+    sql: |
+      select break_type, count(*) as trades
+      from fct_fo_risk_recon
+      where break_type <> 'matched'
+      group by break_type
+      order by trades desc
+
+  - name: residual_load
+    description: Residual load (load minus wind minus solar) for one bidding zone between two timestamps.
+    params: [zone, start_ts, end_ts]
+    sql: |
+      select interval_start_utc, zone, load_mw, wind_mw, solar_mw, residual_load_mw
+      from gridflow.mart_residual_load
+      where zone = :zone and interval_start_utc >= :start_ts and interval_start_utc < :end_ts
+      order by interval_start_utc
+
+  - name: price_spread
+    description: Day-ahead price spread between two neighbouring bidding zones between two timestamps.
+    params: [zone_a, zone_b, start_ts, end_ts]
+    sql: |
+      select interval_start_utc, zone_a, zone_b, price_a_eur_mwh, price_b_eur_mwh, spread_eur_mwh
+      from gridflow.mart_price_spreads
+      where zone_a = :zone_a and zone_b = :zone_b
+        and interval_start_utc >= :start_ts and interval_start_utc < :end_ts
+      order by interval_start_utc
